@@ -1,96 +1,244 @@
-# University Faculty & Class Schedule Management System
+# University Faculty & Schedule Management System
 
-**PERN stack** — PostgreSQL, Express, React, Node.js — with Excel as an **import source**, not the database.
+A web-based university information portal that allows department offices to manage faculty, courses, and class schedules through Excel imports, while providing students and visitors with a searchable public interface for exploring academic information.
 
-## Project Structure
+---
+
+## Overview
+
+This system transforms departmental Excel data into a centralized, structured university information platform.
+
+Department administrators can upload and manage data related to:
+
+* Departments
+* Faculty Members
+* Courses
+* Course Offerings
+* Class Schedules
+
+Students and visitors can browse and search information without requiring an account.
+
+---
+
+## Key Features
+
+### Department Management
+
+* Manage university departments
+* Department-specific data ownership
+* Multi-department support
+
+### Faculty Management
+
+* Faculty profiles
+* Designation and office information
+* Department affiliation
+* Teaching assignments
+
+### Course Management
+
+* Course catalog
+* Credits and semester information
+* Department-wise course organization
+
+### Schedule Management
+
+* Weekly class schedules
+* Teacher timetable
+* Course timetable
+* Classroom allocation
+
+### Excel Import System
+
+* Import structured academic data from Excel files
+* Data validation before commit
+* Preview imported records
+* Approval workflow
+
+### Search & Discovery
+
+* Search teachers
+* Search courses
+* Browse departments
+* Explore schedules
+
+### Public Information Portal
+
+* No login required
+* Faculty directory
+* Department pages
+* Course information pages
+* Schedule viewer
+
+---
+
+## System Workflow
 
 ```text
-university-schedule-portal/
-├── client/       # React (Vite) — public portal + admin UI
-├── server/       # Express REST API — Excel import, business logic
-├── db/           # PostgreSQL schema, init scripts, Docker
-└── README.md
+Department Office
+        │
+        ▼
+ Upload Excel Files
+        │
+        ▼
+ Validate Data
+        │
+        ▼
+ Preview Import
+        │
+        ▼
+ Approve & Commit
+        │
+        ▼
+    Database
+        │
+        ▼
+ Public Web Portal
 ```
 
-| Folder | Role |
-|--------|------|
-| **client/** | React app — homepage carousels, teacher directory, admin dashboard |
-| **server/** | Node/Express API — parses Excel, serves data, exports PDF/Excel |
-| **db/** | Database layer — `schema.sql`, `init.js`, `docker-compose.yml` |
+---
 
-## Architecture
+## Data Structure
+
+The system follows a normalized relational database design to minimize redundancy and ensure data consistency.
+
+### Core Entities
 
 ```text
-Admin → Upload Excel (.xlsx)
-         ↓
-    server/ (Excel Parser)
-         ↓
-    db/ → PostgreSQL (normalized)
-         ↓
-    server/ (Express REST API)
-         ↓
-    client/ (React Portal)
+Departments
+    │
+    ├── Teachers
+    │
+    └── Courses
+            │
+            ▼
+       Offerings
+            │
+            ▼
+       Schedules
 ```
 
-## Quick Start
+### Relationships
 
-### 1. Install dependencies
+* One Department → Many Teachers
+* One Department → Many Courses
+* One Course → Many Offerings
+* One Teacher → Many Offerings
+* One Offering → Many Schedule Entries
 
-```bash
-npm run install:all
+---
+
+## Excel Import Files
+
+### Departments.xlsx
+
+Stores department information.
+
+```text
+department_code
+department_name
 ```
 
-### 2. Database
+### Teachers.xlsx
 
-```bash
-cd db
-cp .env.example .env
-npm run up          # PostgreSQL via Docker (optional)
-npm run init        # create tables + admin user
+Stores faculty information.
+
+```text
+staff_no
+department_code
+full_name
+designation
+email
+office_room
 ```
 
-Also copy `server/.env.example` → `server/.env` and set the same DB credentials.
+### Courses.xlsx
 
-### 3. Backend
+Stores course information.
 
-```bash
-cd server
-cp .env.example .env
-npm run seed:excel  # creates demo Excel file
-npm run dev         # http://localhost:5000
+```text
+course_code
+department_code
+course_title
+credit
+semester
 ```
 
-### 4. Frontend
+### Offerings.xlsx
 
-```bash
-cd client
-npm run dev         # http://localhost:5173
+Links teachers and courses.
+
+```text
+offering_id
+course_code
+staff_no
+term_code
+section
 ```
 
-Or from project root: `npm run dev`
+### Schedules.xlsx
 
-### 5. Admin
+Stores class schedules.
 
-- URL: http://localhost:5173/admin
-- Default: `admin@university.edu` / `admin123`
-- Upload: `server/sample-data/demo_university_schedule.xlsx`
+```text
+slot_id
+offering_id
+day_of_week
+start_time
+end_time
+room
+```
 
-## Features
+---
 
-- Excel import (Teachers, Courses, Schedule sheets with Batch column)
-- Homepage: department carousels + semester rows (5-second rotation)
-- Teaching load, conflict detection, free slots, PDF/Excel export
+## Tech Stack
 
-## Root Scripts
+### Frontend
 
-| Command | Description |
-|---------|-------------|
-| `npm run install:all` | Install deps in root, db, server, client |
-| `npm run dev` | Start server + client |
-| `npm run db:up` | Start PostgreSQL (Docker) |
-| `npm run db:init` | Apply schema + seed admin |
-| `npm run seed:excel` | Generate demo Excel in server |
+* React.js
+* Tailwind CSS
+* TypeScript
 
-## License
+### Backend
 
-MIT — for academic use.
+* Node.js
+* Express.js
+
+### Database
+
+* PostgreSQL
+
+### Excel Processing
+
+* XLSX
+
+---
+
+## Design Principles
+
+* Department-scoped data management
+* Relational database normalization
+* Minimal data redundancy
+* Scalable architecture
+* Excel-based administrative workflow
+* Public access to academic information
+* Clean separation between administrative and public functionality
+
+---
+
+## Future Enhancements
+
+* Conflict detection for overlapping schedules
+* Faculty workload analytics
+* Room occupancy tracking
+* Timetable export (PDF/Excel)
+* Advanced filtering and search
+* Academic calendar integration
+* Attendance management
+* Notification system
+
+---
+
+## Project Goal
+
+To provide a centralized, scalable, and user-friendly platform for managing and publishing university faculty, course, and scheduling information while reducing manual administrative effort and improving information accessibility for students and staff.
