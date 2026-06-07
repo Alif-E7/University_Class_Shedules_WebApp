@@ -1,0 +1,18 @@
+{
+  "name": "university-schedule-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "University Faculty and Class Schedule Management System (PERN)",
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd ../db && npm install",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "db:up": "cd db && npm run up",
+    "db:init": "cd db && npm run init",
+    "seed:excel": "cd server && npm run seed:excel"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

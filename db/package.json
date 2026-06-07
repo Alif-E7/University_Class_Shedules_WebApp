@@ -1,0 +1,17 @@
+{
+  "name": "university-schedule-db",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "PostgreSQL schema, initialization, and Docker setup",
+  "scripts": {
+    "init": "node init.js",
+    "up": "docker compose up -d",
+    "down": "docker compose down"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "pg": "^8.13.1"
+  }
+}
