@@ -61,7 +61,8 @@ CREATE TABLE IF NOT EXISTS courses (
   course_code   VARCHAR(30) NOT NULL,
   course_title  VARCHAR(255) NOT NULL,
   credit        INTEGER NOT NULL DEFAULT 3,
-  semester      VARCHAR(50),
+  year          INTEGER CHECK (year BETWEEN 1 AND 4),
+  semester      INTEGER CHECK (semester BETWEEN 1 AND 2),
   created_at    TIMESTAMPTZ DEFAULT NOW(),
   updated_at    TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(department_id, course_code)

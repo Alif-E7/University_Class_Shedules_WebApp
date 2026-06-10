@@ -27,7 +27,18 @@ router.post('/preview', requireDeptAdmin, upload.single('file'), async (req, res
     const batchId = batch.rows[0].batch_id;
     const stagingInserts = [];
 
-    for (const [sheet, rows] of [['teachers', data.teachers], ['courses', data.courses], ['offerings', data.offerings], ['schedules', data.schedules]]) {
+    // Store department info in staging rows if it exists
+    if (data.department && data.department.department_code) {
+      stagingInserts.push(
+        pool.query(
+          `INSERT INTO import_staging_rows (batch_id, sheet_name, row_index, row_data, status)
+           VALUES ($1, 'department', 0, $2, $3)`,
+          [batchId, JSON.stringify(data.department), data.errors.length > 0 ? 'error' : 'valid']
+        )
+      );
+    }
+
+    for (const [sheet, rows] of [['departments', data.departments], ['teachers', data.teachers], ['courses', data.courses], ['offerings', data.offerings], ['schedules', data.schedules]]) {
       for (let i = 0; i < rows.length; i++) {
         stagingInserts.push(
           pool.query(
@@ -64,9 +75,15 @@ router.post('/confirm/:batchId', requireDeptAdmin, async (req, res) => {
       [batchId]
     );
 
-    const data = { department: {}, teachers: [], courses: [], offerings: [], schedules: [] };
+    const data = { department: {}, departments: [], teachers: [], courses: [], offerings: [], schedules: [] };
     for (const row of staging.rows) {
-      if (data[row.sheet_name]) data[row.sheet_name].push(row.row_data);
+      if (row.sheet_name === 'department') {
+        data.department = row.row_data;
+      } else if (row.sheet_name === 'departments') {
+        data.departments.push(row.row_data);
+      } else if (data[row.sheet_name]) {
+        data[row.sheet_name].push(row.row_data);
+      }
     }
 
     // If dept admin, use their department

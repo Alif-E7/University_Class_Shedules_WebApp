@@ -180,6 +180,7 @@ p { margin: 0 0 0.5rem; }
 .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .grid-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.grid-5 { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
 
 /* ── Stats ── */
 .stat { text-align: center; padding: 1rem; }
@@ -665,12 +666,81 @@ label {
 .semester-name { font-weight: 600; color: var(--ink); }
 .semester-count { font-size: 0.8rem; color: var(--muted); }
 
-.home-quick-links {
+.semester-badge-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.semester-badge-link:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.batch-chip-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.batch-chip-link:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.08);
+}
+
+/* ── Year-Semester Grid ── */
+.year-semester-links {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.ys-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.75rem;
   justify-content: center;
-  margin: 2.5rem 0 1rem;
+  margin-top: 1rem;
+}
+
+.ys-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.ys-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg), var(--glow);
+  text-decoration: none;
+}
+
+.ys-badge {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ys-desc {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 /* ── Admin Layout ── */

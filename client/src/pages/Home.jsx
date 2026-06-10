@@ -59,6 +59,25 @@ export default function Home() {
         </p>
       </header>
 
+      {/* Year-Semester quick links */}
+      {data.yearSemesters?.length > 0 && (
+        <section className="year-semester-links">
+          <h2 className="semester-section-title">Browse by Year & Semester</h2>
+          <div className="ys-grid">
+            {data.yearSemesters.map(ys => (
+              <Link
+                key={ys.label}
+                to={`/weekly?year=${ys.year}&semester=${ys.semester}`}
+                className="ys-card"
+              >
+                <span className="ys-badge">{ys.label}</span>
+                <span className="ys-desc">Year {ys.year} — Semester {ys.semester}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Department stats */}
       {data.allDepartments?.length > 0 && (
         <section className="grid grid-4" style={{ marginBottom: '2rem' }}>
@@ -90,7 +109,15 @@ export default function Home() {
               <div className="batch-chips">
                 {batches.length === 0
                   ? <span className="batch-chip muted-chip">No active batches</span>
-                  : batches.map(b => <span key={b} className="batch-chip">{b}</span>)
+                  : batches.map(b => (
+                    <Link
+                      key={b.label}
+                      to={`/weekly?year=${b.year}&semester=${b.semester}`}
+                      className="batch-chip batch-chip-link"
+                    >
+                      {b.label}
+                    </Link>
+                  ))
                 }
               </div>
             </div>
@@ -120,17 +147,20 @@ export default function Home() {
           <p className="home-sub" style={{ textAlign: 'center' }}>All active batches — rotating today's classes</p>
           {data.activeBatches.map(batch => {
             const items = data.byBatch?.[batch] || [];
+            const [y, s] = batch.split('-');
             return (
               <div key={batch} className="semester-row">
                 <div className="semester-label">
-                  <span className="semester-badge">{batch}</span>
-                  <span className="semester-name">Semester {batch}</span>
+                  <Link to={`/weekly?year=${y}&semester=${s}`} className="semester-badge semester-badge-link">
+                    {batch}
+                  </Link>
+                  <span className="semester-name">Year {y} — Semester {s}</span>
                   <span className="semester-count">{items.length} class{items.length !== 1 ? 'es' : ''} today</span>
                 </div>
                 <FloatingCarousel
                   items={items}
                   accent="#6366f1"
-                  emptyMessage={`No classes today for batch ${batch}`}
+                  emptyMessage={`No classes today for ${batch}`}
                   renderSlide={item => <ClassSlide item={item} variant="compact" />}
                 />
               </div>
@@ -138,14 +168,6 @@ export default function Home() {
           })}
         </section>
       )}
-
-      <nav className="home-quick-links">
-        <Link to="/teachers" className="btn btn-primary">Faculty Directory</Link>
-        <Link to="/courses" className="btn btn-outline">Course Catalog</Link>
-        <Link to="/weekly" className="btn btn-outline">Weekly Grid</Link>
-        <Link to="/departments" className="btn btn-outline">Departments</Link>
-        <Link to="/admin" className="btn btn-outline">Admin Panel</Link>
-      </nav>
     </div>
   );
 }

@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { schedules, departments, formatTime, DAYS } from '../api';
 
 export default function WeeklyPage() {
+  const [searchParams] = useSearchParams();
   const [data, setData] = useState([]);
   const [depts, setDepts] = useState([]);
   const [deptId, setDeptId] = useState('');
   const [error, setError] = useState('');
 
+  const urlYear = searchParams.get('year') || '';
+  const urlSemester = searchParams.get('semester') || '';
+
   const load = () => {
     const params = {};
     if (deptId) params.department_id = deptId;
+    if (urlYear) params.year = urlYear;
+    if (urlSemester) params.semester = urlSemester;
     schedules.weekly(params).then(setData).catch(e => setError(e.message));
   };
 
@@ -19,7 +25,7 @@ export default function WeeklyPage() {
     load();
   }, []);
 
-  useEffect(() => { load(); }, [deptId]);
+  useEffect(() => { load(); }, [deptId, urlYear, urlSemester]);
 
   // Build time slots
   const timeSlots = [];
@@ -39,17 +45,31 @@ export default function WeeklyPage() {
     });
   }
 
+  const filterLabel = urlYear && urlSemester
+    ? `Year ${urlYear} — Semester ${urlSemester}`
+    : null;
+
   return (
     <div>
       <h1>Weekly Timetable</h1>
+      {filterLabel && (
+        <p style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--accent)', margin: '0.25rem 0 0.5rem' }}>
+          📅 {filterLabel}
+        </p>
+      )}
       <p className="muted">Full weekly view of all scheduled classes.</p>
 
       <div className="card" style={{ margin: '1rem 0' }}>
-        <div className="search-bar">
+        <div className="search-bar" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <select value={deptId} onChange={e => setDeptId(e.target.value)}>
             <option value="">All departments</option>
             {depts.map(d => <option key={d.department_id} value={d.department_id}>{d.department_code} — {d.department_name}</option>)}
           </select>
+          {filterLabel && (
+            <Link to="/weekly" className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.3rem 0.7rem' }}>
+              ✕ Clear Year/Semester Filter
+            </Link>
+          )}
         </div>
       </div>
 
@@ -89,7 +109,7 @@ export default function WeeklyPage() {
           </tbody>
         </table>
       </div>
-      {data.length === 0 && !error && <p className="muted" style={{ marginTop: '1rem', textAlign: 'center' }}>No schedule data. Import from Admin.</p>}
+      {data.length === 0 && !error && <p className="muted" style={{ marginTop: '1rem', textAlign: 'center' }}>No schedule data{filterLabel ? ` for ${filterLabel}` : ''}. Import from Admin.</p>}
     </div>
   );
 }

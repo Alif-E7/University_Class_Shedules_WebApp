@@ -15,10 +15,10 @@ function normalizeDay(d) {
 // ── Public: list schedule slots ──
 router.get('/', async (req, res) => {
   try {
-    const { day, teacher_id, course_id, department_id, room_id, term_id } = req.query;
+    const { day, teacher_id, course_id, department_id, room_id, term_id, year, semester } = req.query;
     let sql = `
       SELECT ss.*, co.section, co.offering_id,
-             c.course_code, c.course_title, c.credit,
+             c.course_code, c.course_title, c.credit, c.year, c.semester,
              t.teacher_id, t.full_name AS teacher_name, t.staff_no,
              r.room_number, r.building,
              d.department_code, d.department_name,
@@ -57,6 +57,14 @@ router.get('/', async (req, res) => {
       params.push(term_id);
       sql += ` AND co.term_id = $${params.length}`;
     }
+    if (year) {
+      params.push(parseInt(year));
+      sql += ` AND c.year = $${params.length}`;
+    }
+    if (semester) {
+      params.push(parseInt(semester));
+      sql += ` AND c.semester = $${params.length}`;
+    }
 
     sql += ' ORDER BY ss.day_of_week, ss.start_time';
     const { rows } = await pool.query(sql, params);
@@ -70,10 +78,10 @@ router.get('/', async (req, res) => {
 // ── Public: weekly grid ──
 router.get('/weekly', async (req, res) => {
   try {
-    const { teacher_id, department_id, term_id } = req.query;
+    const { teacher_id, department_id, term_id, year, semester } = req.query;
     let sql = `
       SELECT ss.*, co.section,
-             c.course_code, c.course_title,
+             c.course_code, c.course_title, c.year, c.semester,
              t.full_name AS teacher_name, t.teacher_id,
              r.room_number, r.building,
              d.department_code
@@ -94,6 +102,14 @@ router.get('/weekly', async (req, res) => {
     if (department_id) {
       params.push(department_id);
       sql += ` AND c.department_id = $${params.length}`;
+    }
+    if (year) {
+      params.push(parseInt(year));
+      sql += ` AND c.year = $${params.length}`;
+    }
+    if (semester) {
+      params.push(parseInt(semester));
+      sql += ` AND c.semester = $${params.length}`;
     }
     if (term_id) {
       params.push(term_id);

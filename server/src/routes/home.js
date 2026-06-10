@@ -16,7 +16,10 @@ router.get('/homepage', async (req, res) => {
       `SELECT ss.slot_id, ss.day_of_week, ss.start_time, ss.end_time,
               co.offering_id, co.section,
               c.course_id, c.course_code, c.course_title, c.credit,
-              COALESCE(NULLIF(c.semester, ''), 'General') AS batch,
+              c.year, c.semester,
+              CASE WHEN c.year IS NOT NULL AND c.semester IS NOT NULL
+                   THEN c.year || '-' || c.semester
+                   ELSE 'General' END AS batch,
               t.teacher_id, t.full_name AS teacher_name, t.designation, t.staff_no,
               r.room_number, r.building,
               d.department_id, d.department_code, d.department_name
@@ -42,23 +45,27 @@ router.get('/homepage', async (req, res) => {
       if (!deptInfo[key]) deptInfo[key] = { department_id: c.department_id, department_name: c.department_name };
     }
 
-    // Get all departments with their batches
+    // Get all year-semester combos per department
     const { rows: batchRows } = await pool.query(
-      `SELECT DISTINCT d.department_code, c.semester AS batch
+      `SELECT DISTINCT d.department_code,
+              c.year || '-' || c.semester AS batch,
+              c.year, c.semester
        FROM courses c
        JOIN departments d ON c.department_id = d.department_id
-       WHERE c.semester IS NOT NULL AND TRIM(c.semester) <> ''
-       ORDER BY d.department_code, c.semester`
+       WHERE c.year IS NOT NULL AND c.semester IS NOT NULL
+       ORDER BY d.department_code, c.year, c.semester`
     );
 
     const departments = {};
     for (const row of batchRows) {
       const code = row.department_code;
       if (!departments[code]) departments[code] = [];
-      if (!departments[code].includes(row.batch)) departments[code].push(row.batch);
+      if (!departments[code].find(b => b.label === row.batch)) {
+        departments[code].push({ label: row.batch, year: row.year, semester: row.semester });
+      }
     }
 
-    // Group by batch
+    // Group by batch (year-semester)
     const batchSet = new Set(classes.map(c => c.batch).filter(b => b && b !== 'General'));
     const activeBatches = [...batchSet].sort();
     const byBatch = {};
@@ -74,6 +81,14 @@ router.get('/homepage', async (req, res) => {
        FROM departments d ORDER BY d.department_code`
     );
 
+    // Get all year-semester combos globally for homepage links
+    const { rows: yearSemRows } = await pool.query(
+      `SELECT DISTINCT c.year, c.semester, c.year || '-' || c.semester AS label
+       FROM courses c
+       WHERE c.year IS NOT NULL AND c.semester IS NOT NULL
+       ORDER BY c.year, c.semester`
+    );
+
     res.json({
       day: today,
       dateLabel,
@@ -83,6 +98,7 @@ router.get('/homepage', async (req, res) => {
       byBatch,
       classes,
       allDepartments: allDepts,
+      yearSemesters: yearSemRows,
     });
   } catch (err) {
     console.error(err);

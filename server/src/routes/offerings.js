@@ -81,8 +81,23 @@ router.get('/:id', async (req, res) => {
 router.post('/', requireDeptAdmin, async (req, res) => {
   try {
     const { course_id, teacher_id, term_id, section } = req.body;
-    if (!course_id || !teacher_id || !term_id) {
-      return res.status(400).json({ error: 'course_id, teacher_id, and term_id required' });
+    if (!course_id || !teacher_id) {
+      return res.status(400).json({ error: 'course_id and teacher_id required' });
+    }
+
+    // Auto-assign active term if not provided
+    let resolvedTermId = term_id;
+    if (!resolvedTermId) {
+      const termRes = await pool.query('SELECT term_id FROM terms WHERE is_active = TRUE LIMIT 1');
+      if (termRes.rows[0]) {
+        resolvedTermId = termRes.rows[0].term_id;
+      } else {
+        // Auto-create a default term
+        const newTerm = await pool.query(
+          `INSERT INTO terms (academic_year, term_name, is_active) VALUES ('2025-2026', 'Default', TRUE) RETURNING term_id`
+        );
+        resolvedTermId = newTerm.rows[0].term_id;
+      }
     }
 
     // Scope check for dept admin
@@ -96,7 +111,7 @@ router.post('/', requireDeptAdmin, async (req, res) => {
     const { rows } = await pool.query(
       `INSERT INTO course_offerings (course_id, teacher_id, term_id, section)
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [course_id, teacher_id, term_id, section || 'A']
+      [course_id, teacher_id, resolvedTermId, section || 'A']
     );
     res.status(201).json(rows[0]);
   } catch (err) {

@@ -86,15 +86,15 @@ router.post('/', requireDeptAdmin, async (req, res) => {
 
     if (!deptId) return res.status(400).json({ error: 'department_id required' });
 
-    const { course_code, course_title, credit, semester } = req.body;
+    const { course_code, course_title, credit, year, semester } = req.body;
     if (!course_code || !course_title) {
       return res.status(400).json({ error: 'course_code and course_title required' });
     }
 
     const { rows } = await pool.query(
-      `INSERT INTO courses (department_id, course_code, course_title, credit, semester)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [deptId, course_code.toUpperCase(), course_title, credit || 3, semester || null]
+      `INSERT INTO courses (department_id, course_code, course_title, credit, year, semester)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [deptId, course_code.toUpperCase(), course_title, credit || 3, year || null, semester || null]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
@@ -114,12 +114,13 @@ router.put('/:id', requireDeptAdmin, async (req, res) => {
       }
     }
 
-    const { course_code, course_title, credit, semester } = req.body;
+    const { course_code, course_title, credit, year, semester } = req.body;
     const { rows } = await pool.query(
       `UPDATE courses SET course_code = COALESCE($1, course_code), course_title = COALESCE($2, course_title),
-                           credit = COALESCE($3, credit), semester = COALESCE($4, semester), updated_at = NOW()
-       WHERE course_id = $5 RETURNING *`,
-      [course_code?.toUpperCase(), course_title, credit, semester, req.params.id]
+                           credit = COALESCE($3, credit), year = COALESCE($4, year),
+                           semester = COALESCE($5, semester), updated_at = NOW()
+       WHERE course_id = $6 RETURNING *`,
+      [course_code?.toUpperCase(), course_title, credit, year, semester, req.params.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Course not found' });
     res.json(rows[0]);
