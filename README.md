@@ -1,3 +1,4 @@
+## Vibe Coded
 # University Faculty & Schedule Management System
 
 A web-based university information portal that allows department offices to manage faculty, courses, and class schedules through Excel imports, while providing students and visitors with a searchable public interface for exploring academic information.
